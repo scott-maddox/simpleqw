@@ -73,7 +73,6 @@ cpdef double energy_scaled(double P, int n=1, double atol=1e-6):
     eta = n * pi_2 - asin(r) - r * P
     w = 1  # relaxation parameter (for succesive relaxation)
     while True:
-        assert r <= 1
         if abs(eta) < atol:
             break
         r2 = r ** 2.
@@ -94,10 +93,10 @@ cpdef double energy_scaled(double P, int n=1, double atol=1e-6):
                 w *= 0.5
 
     alpha = P * r
-    E = 2 * (alpha) ** 2  # hbar ** 2. / (m * L ** 2.))
+    E = 2. * (alpha) ** 2.  # hbar ** 2. / (m * L ** 2.))
     return E
 
-cpdef energy(double L, double m, double U, int n=1, double atol=1e-6):
+cpdef double energy(double L, double m, double U, int n=1, double atol=1e-6):
     '''
     Returns the nth bound-state energy [eV] for a finite-potential quantum
     well with the given well-strength parameter, `P`.
@@ -128,6 +127,6 @@ cpdef energy(double L, double m, double U, int n=1, double atol=1e-6):
     '''
     
     if U <= 0.:
-        return 0
+        return 0.
     cdef double P = _P_prefactor * L * sqrt(m * U)
     return energy_scaled(P, n, atol) * _E_units / (m * L ** 2.)
