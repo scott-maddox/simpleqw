@@ -28,7 +28,7 @@ cdef double eV = 1.60217657e-19  # J
 cdef double m_e = 9.10938215e-31  # kg
 cdef double nm = 1e-9  # m
 cdef double _P_prefactor = (sqrt(2. * m_e * eV) / hbar) * (nm / 2.)
-cdef double _E_units = 4 * hbar ** 2 / (m_e * nm ** 2)
+cdef double _E_units = hbar ** 2 / (m_e * nm ** 2) / eV
 
 cpdef int num_states_scaled(double P):
     '''
@@ -44,7 +44,7 @@ cpdef int num_states_scaled(double P):
 
 cpdef double energy_scaled(double P, int n=1, double atol=1e-6):
     '''
-    Returns the nth bound-state energy [hbar ** 2. / (2. * m * L ** 2.))] for a
+    Returns the nth bound-state energy [hbar ** 2. / (m * L ** 2.))] for a
     finite-potential quantum well with the given well-strength parameter, `P`.
 
     Parameters
@@ -59,14 +59,14 @@ cpdef double energy_scaled(double P, int n=1, double atol=1e-6):
     Returns
     -------
     energy : double
-        the bound-state energy [hbar ** 2. / (2. * m * L ** 2.)]
+        the bound-state energy [hbar ** 2. / (m * L ** 2.))]
 
     References
     ----------
         D.L. Aronstein and C.R. Stroud, Jr., Am. J. Phys. 68, 943 (2000).
     '''
-    cdef double (pi_2, r, eta, w, r2, sqrt_1mr2, denom, t1, next_r, next_eta,
-                 alpha, E)
+    cdef double pi_2, r, eta, w, r2, sqrt_1mr2, denom, t1, next_r, next_eta
+    cdef double alpha, E
     assert n > 0 and n <= num_states_scaled(P)
     pi_2 = pi / 2.
     r = (1 / (P + pi_2)) * (n * pi_2)
@@ -94,7 +94,7 @@ cpdef double energy_scaled(double P, int n=1, double atol=1e-6):
                 w *= 0.5
 
     alpha = P * r
-    E = 2 * (alpha) ** 2  # hbar**2 / (m * L**2)
+    E = 2 * (alpha) ** 2  # hbar ** 2. / (m * L ** 2.))
     return E
 
 cpdef energy(double L, double m, double U, int n=1, double atol=1e-6):
@@ -126,14 +126,8 @@ cpdef energy(double L, double m, double U, int n=1, double atol=1e-6):
     ----------
         D.L. Aronstein and C.R. Stroud, Jr., Am. J. Phys. 68, 943 (2000).
     '''
-    cdef double P, E_conversion
+    
     if U <= 0.:
         return 0
-    P = _P_prefactor * L * sqrt(m * U)
-    print P
-#     E_conversion = eV / (_E_units / (m * L ** 2.))
-    E_conversion = eV / (4 * hbar**2 / (m * m_e * (L * nm) ** 2.))
-#     E_units = hbar ** 2. / (2. * m * m_e * (L * nm) ** 2.)
-#     return energy_scaled(P, n, atol) * E_factor
-    return energy_scaled(P, n, atol) * E_conversion
-
+    cdef double P = _P_prefactor * L * sqrt(m * U)
+    return energy_scaled(P, n, atol) * _E_units / (m * L ** 2.)

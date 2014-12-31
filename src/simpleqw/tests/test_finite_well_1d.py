@@ -23,10 +23,6 @@
 import unittest
 
 # local imports
-import sys
-import os
-sys.path.append(
-    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from simpleqw import finite_well_1d
 
 
@@ -64,9 +60,13 @@ class TestFiniteWell1D(unittest.TestCase):
     def testEnergy(self):
         self.assertAlmostEqual(finite_well_1d.energy(L=1./2.56158355342,
                                                      m=1, U=1, n=1),
-                               0.546246620648,
+                               0.546246834314,
                                places=4)
-        self.assertAlmostEqual(finite_well_1d.energy(L=1e-1/2.56158355342,
+        self.assertAlmostEqual(finite_well_1d.energy(L=1e5/2.56158355342,
+                                                     m=1, U=1, n=1),
+                               0.,
+                               places=4)
+        self.assertAlmostEqual(finite_well_1d.energy(L=1e-5/2.56158355342,
                                                      m=1, U=1, n=1),
                                1.,
                                places=4)

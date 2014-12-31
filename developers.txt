@@ -1,0 +1,59 @@
+Structure
+=========
+
+Build scripts are located in the root directory, the package source code is in `/src/` with examples in `src/simpleqw/examples/` and tests in `/src/simpleqw/tests/`. Documentation will be located in `/doc/`.
+
+Git Branching Model
+===================
+I'm using the Git branching model described [here](http://nvie.com/posts/a-successful-git-branching-model/).
+
+How To Release a New Version
+============================
+
+When you want release a new version, follow these directions. First, create a release branch by branching off of the develop branch (substitute in the appropriate version number):
+
+    git checkout -b release-1.0 develop
+
+Next, bump the version number. From the root of the git repository run these commands (again, substituting the appropriate version number):
+
+    echo "__version__ = '1.0'" > src/simpleqw/version.py
+    git commit -am "Bumbed version number to 1.0"
+
+Now is a good time to run the unit tests and examples, to make sure you haven't missed any bugs. The following command will test simpleqw inside a clean virtualenv:
+
+    ./test_setup.sh
+
+Go ahead and fix any bugs you find in the release branch, and we'll merge them back into the develop branch later. If everything checks out, and you're sure the release is bug free and ready to go, then you can go ahead and build the documentation:
+
+    python build_doc.py clean
+
+Check the resulting documentation. If it looks good, upload it:
+
+    ./upload_doc.sh
+
+Next, merge the changes from the release branch into the master branch, and tag the release:
+
+    git checkout master
+    git merge --no-ff release-1.0
+    git tag -a v1.0
+    git push origin
+
+Then run the following commands from the root of the git repository to build and upload the release to PyPI:
+
+    python setup.py build
+    python setup.py register sdist bdist_egg upload
+
+Now, users should be able to install simpleqw from pip. In order to make sure this is working, test installation inside a clean virtualenv:
+
+    ./test_pip.sh
+
+Now go to the github page to "create a release" and upload the 'egg', 'zip', and 'tar.gz' files from the 'dist' directory.
+
+Finally, merge the release branch into the develop branch, and then delete the release branch:
+
+    git checkout develop
+    git merge --no-ff release-1.0
+    git branch -d release-1.0
+    git push origin
+
+Congratulations, you're done releasing the new version of openbandparams!

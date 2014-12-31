@@ -21,42 +21,52 @@
 
 # std lib imports
 from setuptools import setup
-from glob import glob
 import os
-
-# third party imports
-from Cython.Build import cythonize
 
 # read in __version__
 exec(open('src/simpleqw/version.py').read())
 
-# Change to the src directory, so that `setup.py build_ext --inplace`
-# works properly.
-os.chdir('src')
+# Prepare cython. This pattern performs a late import of Cython,
+# so that setuptools/pip has a chance to install them first.
+# class LazyList(list):
+#     def __init__(self, func):
+#         self.__func = func
+#         self.__initialized = False
+#         self.__list = None
+#     
+#     def __getattr__(self, attr):
+#         if not self.__initialized:
+#             self.__list = self.__func()
+#             self.__initialized = True
+#         return getattr(self._list, attr)
+#  
+# def get_extensions():
+#     from Cython.Build import cythonize
+#     cython_modules = ['src/simpleqw/finite_well_1d.pyx']
+#     return cythonize(cython_modules)
 
-cython_modules = []
-cython_modules += glob(os.path.join('*.pyx'))
-cython_modules += glob(os.path.join('*', '*.pyx'))
-cython_modules += glob(os.path.join('*', '*', '*.pyx'))
-print 'Cython modules:', cython_modules
+from Cython.Build import cythonize
+cython_modules = ['src/simpleqw/finite_well_1d.pyx']
+ext_modules = cythonize(cython_modules)
+
 
 setup(
     name='SimpleQW',
     version=__version__,  # read from version.py
     description='simple quantum well computations',
-    long_description=open('../README.rst').read(),
+    long_description=open('README.rst').read(),
     url='http://scott-maddox.github.io/simpleqw',
     author='Scott J. Maddox',
     author_email='smaddox@utexas.edu',
     license='AGPLv3',
     packages=['simpleqw',
-              'simpleqw.tests',
-              'simpleqw.examples',],
-    package_dir={'simpleqw': 'simpleqw'},
-    test_suite='simpleqw.tests',
+              'simpleqw.tests',],
+    package_dir={'simpleqw': 'src/simpleqw'},
+    setup_requires=['cython>=0.17'],
+    install_requires=['cython>=0.17'],
+    tests_require=['cython>=0.17'],
+    test_suite = 'simpleqw.tests',
     zip_safe=True,
-    use_2to3=True,
-    ext_modules=cythonize(cython_modules),
+#     ext_modules=LazyList(get_extensions),
+    ext_modules=ext_modules,
 )
-
-print 'Done.'
